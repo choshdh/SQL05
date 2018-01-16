@@ -1,7 +1,7 @@
 --문제1.
 --가장 늦게 입사한 직원의 이름(first_name last_name)과 연봉(salary)과 근무하는 부서
 --이름(department_name)은?
-
+--1)rownum 배우기 전
 select es.first_name||' '||es.last_name "이름",
         es.salary "연봉",
         ds.department_name "근무부서",
@@ -10,6 +10,27 @@ from employees es, departments ds
 where es.department_id = ds.department_id
       and es.hire_date = (select max(hire_date)
                           from employees);
+
+--2)rownum 을 사용한 sql 풀이
+select es.first_name||' '||es.last_name "이름",
+            es.salary "연봉",
+            ds.department_name "근무부서",
+            es.hire_date "입사일"
+from employees es, departments ds
+where es.department_id = ds.department_id
+      and es.hire_date =  (select b.hire_date
+                           from
+                               (select rownum,
+                                     a.hire_date
+                                from
+                                    (select hire_date
+                                     from employees
+                                     order by hire_date desc
+                                    ) a
+                                where rownum = 1
+                                )b 
+                          );   -- 이 문제에서는 비효율 적인듯 바로 테이블에서 최대값을 뽑을수 있기 때문에
+
 
 --문제2.
 --평균연봉(salary)이 가장 높은 부서 직원들의 직원번호(employee_id), 이름(firt_name),
@@ -54,14 +75,12 @@ where es.job_id = js.job_id
                                 where rownum = 1
                              )a
                         );
-
-                      
-                                                     
+                                        
                                                      
 --문제3.
 --평균 급여(salary)가 가장 높은 부서는?
 --1)rownum 배우기 전
-select distinct ds.department_name
+select distinct ds.department_name "부서명"
 from employees es,
      departments ds,
      (select department_id,
@@ -75,20 +94,23 @@ where es.department_id = ds.department_id
                             group by department_id);
                             
 --2)rownum 을 사용한 sql 풀이
-select rownum,
-        avgs."부서명",
-        avgs."평균급여"
+select r."부서명"
 from
-    (select department_name "부서명",
-           avg(salary) "평균급여"
-    from employees es,
-         departments ds
-    where es.department_id = ds.department_id
-    group by department_name
-    order by "평균급여" desc
-    ) avgs
-where rownum = 1;    --where 절에서는 현재 select 문에 붙여놓은 별칭을 사용 할 수 없는것 같음...
-                     --별칭은 다음 select문에서 사용하기 위해서 붙이는 이름인듯...
+    (select rownum,
+            avgs."부서명",
+            avgs."평균급여"
+    from
+        (select department_name "부서명",
+               avg(salary) "평균급여"
+        from employees es,
+             departments ds
+        where es.department_id = ds.department_id
+        group by department_name
+        order by "평균급여" desc
+        ) avgs
+    where rownum = 1    --where 절에서는 현재 select 문에 붙여놓은 별칭을 사용 할 수 없는것 같음...
+                         --별칭은 다음 select문에서 사용하기 위해서 붙이는 이름인듯...
+    )r;
 
 
 
