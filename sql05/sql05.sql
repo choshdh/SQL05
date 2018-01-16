@@ -14,7 +14,7 @@ where es.department_id = ds.department_id
 --문제2.
 --평균연봉(salary)이 가장 높은 부서 직원들의 직원번호(employee_id), 이름(firt_name),
 --성(last_name)과 업무(job_title), 연봉(salary)을 조회하시오.
-
+--1)rownum 배우기 전
 select es.employee_id "사원번호",
         es.first_name||' '||es.last_name "이름",
         js.job_title "업무명",
@@ -29,10 +29,43 @@ where es.job_id = js.job_id
                               where avgs.avgSalary = (select max(avg(salary))
                                                      from employees
                                                      group by department_id));
-   
+                                                     
+--2)rownum 을 사용한 sql 풀이
+select ds.department_name,
+        es.employee_id "사번",
+        es.first_name||' '||es.last_name "이름",
+        js.job_title "업무명",
+        es.salary "연봉"
+from employees es, jobs js , departments ds
+where es.job_id = js.job_id
+      and es.department_id = ds.department_id
+      and ds.department_name =
+                        (select a.department_name
+                        from (select  rownum,
+                                        department_name
+                                from 
+                                    (select ds.department_name,
+                                            avg(es.salary) "평균급여"
+                                    from employees es, departments ds
+                                    where es.department_id = ds.department_id
+                                    group by ds.department_name
+                                    order by "평균급여" desc
+                                    ) avgs
+                                where rownum = 1
+                             )a
+                        );
+                        
+select es.department_id,
+       ds.department_name
+from employees es, departments ds
+where es.department_id = ds.department_id;
+
+                      
+                                                     
+                                                     
 --문제3.
 --평균 급여(salary)가 가장 높은 부서는?
-
+--1)rownum 배우기 전
 select distinct ds.department_name
 from employees es,
      departments ds,
@@ -45,6 +78,25 @@ where es.department_id = ds.department_id
       and avgs.avgSalary = (select max(avg(salary))
                             from employees
                             group by department_id);
+                            
+--2)rownum 을 사용한 sql 풀이
+select rownum,
+        avgs."부서명",
+        avgs."평균급여"
+from
+    (select department_name "부서명",
+           avg(salary) "평균급여"
+    from employees es,
+         departments ds
+    where es.department_id = ds.department_id
+    group by department_name
+    order by "평균급여" desc
+    ) avgs
+where rownum = 1;    --where 절에서는 현재 select 문에 붙여놓은 별칭을 사용 할 수 없는것 같음...
+                     --별칭은 다음 select문에서 사용하기 위해서 붙이는 이름인듯...
+
+
+
 --문제4.
 --평균 급여(salary)가 가장 높은 지역은?
 
