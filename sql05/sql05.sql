@@ -54,11 +54,6 @@ where es.job_id = js.job_id
                                 where rownum = 1
                              )a
                         );
-                        
-select es.department_id,
-       ds.department_name
-from employees es, departments ds
-where es.department_id = ds.department_id;
 
                       
                                                      
