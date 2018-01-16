@@ -142,11 +142,13 @@ where avgs.avgSalary = (select max(avg(es.salary))
                              and cs.region_id = rs.region_id
                        group by rs.region_name);
 
+                       
 --문제5.
 --평균 급여(salary)가 가장 높은 업무는?
-
+--1)rownum 배우기 전
 select j.job_title
-from(select js.job_id,
+from
+     (select js.job_id,
              avg(es.salary) avgsalary
       from employees es, jobs js
       where es.job_id = js.job_id
@@ -157,3 +159,17 @@ where jes.job_id = j.job_id
                            where es.job_id = js.job_id
                            group by js.job_id);
 
+--2)rownum 을 사용한 sql 풀이
+select job_title
+from
+     (select rownum rn,
+               job_title
+     from (select job_title,
+                  avg(salary) avgSalary
+           from employees es , jobs js
+           where es.job_id = js.job_id
+           group by job_title
+           order by avgSalary desc
+           ) r
+     ) r2
+where r2.rn= 1;
