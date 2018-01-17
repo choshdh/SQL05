@@ -146,7 +146,7 @@ where avgs.avgSalary = (select max(avg(es.salary))
 --2)rownum 을 사용한 sql 풀이
 select totalResult."지역명"
 from
-    (select rownum rn,
+    (select rownum rn,  --rownum 에 별칭을 붙이지않으면 바깥 select 문에서 사용하지 못한다..
             "지역명"
      from 
            (select  rs.region_name "지역명",
