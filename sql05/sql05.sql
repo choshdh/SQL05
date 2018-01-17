@@ -118,6 +118,7 @@ from
 --평균 급여(salary)가 가장 높은 지역은?
 
 select "지역명"
+--1)rownum 배우기 전
 from (select rs.region_name "지역명",
                 avg(es.salary) avgSalary
         from employees es,
@@ -141,8 +142,31 @@ where avgs.avgSalary = (select max(avg(es.salary))
                              and ls.country_id = cs.country_id
                              and cs.region_id = rs.region_id
                        group by rs.region_name);
-
                        
+--2)rownum 을 사용한 sql 풀이
+select totalResult."지역명"
+from
+    (select rownum rn,
+            "지역명"
+     from 
+           (select  rs.region_name "지역명",
+                 avg(es.salary) avgSalary
+            from employees es,
+                 departments ds,
+                 locations ls,
+                 countries cs,
+                 regions rs
+            where es.department_id = ds.department_id
+                  and ds.location_id = ls.location_id
+                  and ls.country_id = cs.country_id
+                  and cs.region_id = rs.region_id
+            group by rs.region_name
+            order by avgSalary desc
+            ) avgs
+     ) totalResult
+where totalResult.rn = 1;
+
+
 --문제5.
 --평균 급여(salary)가 가장 높은 업무는?
 --1)rownum 배우기 전
@@ -173,3 +197,4 @@ from
            ) r
      ) r2
 where r2.rn= 1;
+
